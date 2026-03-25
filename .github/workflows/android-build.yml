@@ -1,0 +1,37 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [master]
+  release:
+    types: [published]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies for Buildozer
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip git zip unzip openjdk-11-jdk \
+            python3-setuptools python3-wheel clang libffi-dev libssl-dev \
+            libsqlite3-dev
+          pip install --upgrade buildozer kivy
+
+      - name: Build APK
+        run: |
+          buildozer -v android debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: bin/*.apk
